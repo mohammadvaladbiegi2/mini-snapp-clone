@@ -1,0 +1,107 @@
+/* src/App.css */
+
+/* استایل‌های پیش‌فرض leaflet */
+.leaflet-container {
+  height: 100vh;
+  width: 100%;
+}
+
+/* استایل‌های سفارشی برای متن بالای نشانگرها */
+.label {
+  background-color: white;
+  padding: 2px 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #007bff;
+  font-weight: bold;
+  text-align: center;
+  width: 50px;
+  position: absolute;
+  z-index: 1000;
+}
+
+
+
+/* استایل‌های سفارشی برای باکس طول مسیر و دکمه‌ها */
+.bottom-box {
+  position: fixed;
+  bottom: 0;
+  left: 50%; 
+  transform: translateX(-50%); 
+  width: fit-content;
+  background: #f8f9fa;
+  padding: 15px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  z-index: 999;
+}
+
+
+
+.distance-box {
+  background: #007bff;
+  padding: 10px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-weight: bold;
+  border-radius: 20px;
+  margin: 5px 0px;
+  width: 100%;
+}
+
+/* استایل‌های دکمه‌ها */
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+/* استایل دکمه ویرایش */
+.edit-button {
+  background-color: #28a745;
+  width: 100%;
+}
+
+.edit-button:hover {
+  background-color: #218838;
+}
+
+.edit-mode-info {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.first-bottoms{
+  margin: 0 10px;
+}
+
+.my-locations-btn{
+  width: 100%;
+}
+
+.details-rout{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

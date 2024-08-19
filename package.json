@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-leaflet/core": "^2.1.0",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "leaflet-routing-machine": "^3.2.12",

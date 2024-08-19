@@ -1,41 +1,63 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+import L from 'leaflet';
+import 'leaflet-routing-machine';
 import './App.css';
 import { startIcon, endIcon } from './Icons';
 
-// موقعیت مرکزی نقشه (تهران)
 const center = [35.6892, 51.3890];
-
-// قیمت به ازای هر کیلومتر
 const pricePerKm = 4500;
 
-// کامپوننت برای زوم کردن به موقعیت خاص
 function ZoomToLocation({ position }) {
   const map = useMap();
 
   React.useEffect(() => {
     if (position) {
-      map.flyTo(position, 16); // زوم به موقعیت و تغییر لول زوم
+      map.flyTo(position, 16);
     }
   }, [position, map]);
 
   return null;
 }
 
-function App() {
-  const [origin, setOrigin] = useState(null); // ذخیره موقعیت مبدا
-  const [destination, setDestination] = useState(null); // ذخیره موقعیت مقصد
-  const [distance, setDistance] = useState(null); // ذخیره فاصله
-  const [price, setPrice] = useState(null); // ذخیره قیمت
-  const [editMode, setEditMode] = useState(false); // حالت ویرایش
-  const [userLocation, setUserLocation] = useState(null); // ذخیره موقعیت کاربر
+function RoutingMachine({ origin, destination }) {
+  const map = useMap();
 
-  // محاسبه فاصله بین مبدا و مقصد
+  React.useEffect(() => {
+    if (origin && destination) {
+      const routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(origin.lat, origin.lng),
+          L.latLng(destination.lat, destination.lng)
+        ],
+        lineOptions: {
+          styles: [{ color: 'purple', weight: 5 }] // تنظیم رنگ و ضخامت خط مسیر
+        },
+        createMarker: () => null // مخفی کردن مارکر‌های پیش‌فرض
+      }).addTo(map);
+
+      return () => {
+        map.removeControl(routingControl);
+      };
+    }
+  }, [origin, destination, map]);
+
+  return null;
+}
+
+function App() {
+  const [origin, setOrigin] = useState(null);
+  const [destination, setDestination] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const [price, setPrice] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
   const calculateDistance = (origin, destination) => {
-    const R = 6371; // شعاع زمین بر حسب کیلومتر
-    const dLat = ((destination.lat - origin.lat) * Math.PI) / 180; // اختلاف عرض جغرافیایی
-    const dLng = ((destination.lng - origin.lng) * Math.PI) / 180; // اختلاف طول جغرافیایی
+    const R = 6371;
+    const dLat = ((destination.lat - origin.lat) * Math.PI) / 180;
+    const dLng = ((destination.lng - origin.lng) * Math.PI) / 180;
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((origin.lat * Math.PI) / 180) *
@@ -43,23 +65,22 @@ function App() {
       Math.sin(dLng / 2) *
       Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const d = R * c; // فاصله بر حسب کیلومتر
+    const d = R * c;
 
     if (d > 60) {
       alert('خطا: فاصله بیشتر از 60 کیلومتر است.');
-      handleEditClick(); // برگشت به حالت ویرایش
+      handleEditClick();
     } else {
-      return d.toFixed(2); // برگرداندن فاصله با دقت دو رقم اعشار
+      return d.toFixed(2);
     }
   };
 
-  // محاسبه موقعیت مقصد با 1 کیلومتر فاصله از مبدا
   const calculateDestination = (origin, distanceKm, bearing) => {
-    const R = 6371; // شعاع زمین بر حسب کیلومتر
-    const d = distanceKm / R; // فاصله تقسیم بر شعاع
-    const bearingRad = (bearing * Math.PI) / 180; // تبدیل به رادیان
-    const lat1 = (origin.lat * Math.PI) / 180; // تبدیل به رادیان
-    const lng1 = (origin.lng * Math.PI) / 180; // تبدیل به رادیان
+    const R = 6371;
+    const d = distanceKm / R;
+    const bearingRad = (bearing * Math.PI) / 180;
+    const lat1 = (origin.lat * Math.PI) / 180;
+    const lng1 = (origin.lng * Math.PI) / 180;
 
     const lat2 = Math.asin(
       Math.sin(lat1) * Math.cos(d) +
@@ -79,7 +100,6 @@ function App() {
     };
   };
 
-  // وقتی کاربر روی دکمه "انتخاب مبدا" کلیک می‌کند
   const handleOriginClick = () => {
     const originCoords = { lat: 35.68839378384561, lng: 51.39163970947266 };
     setOrigin(originCoords);
@@ -91,29 +111,26 @@ function App() {
     }
   };
 
-  // وقتی کاربر روی دکمه "انتخاب مقصد" کلیک می‌کند
   const handleDestinationClick = () => {
     if (origin) {
-      const bearing = 90; // 90 درجه به معنای حرکت به سمت شرق
-      const destinationCoords = calculateDestination(origin, 1, bearing); // محاسبه موقعیت مقصد با 1 کیلومتر فاصله
-      const dist = calculateDistance(origin, destinationCoords); // محاسبه فاصله
-      setDistance(dist); // ذخیره فاصله
-      setPrice(dist * pricePerKm); // ذخیره قیمت
-      setDestination(destinationCoords); // ذخیره موقعیت مقصد
+      const bearing = 90;
+      const destinationCoords = calculateDestination(origin, 1, bearing);
+      const dist = calculateDistance(origin, destinationCoords);
+      setDistance(dist);
+      setPrice(dist * pricePerKm);
+      setDestination(destinationCoords);
     }
   };
 
-  // وقتی کاربر روی دکمه "ویرایش" کلیک می‌کند
   const handleEditClick = () => {
-    setEditMode(true); // فعال کردن حالت ویرایش
-    setOrigin(null); // پاک کردن مبدا
-    setDestination(null); // پاک کردن مقصد
-    setDistance(null); // پاک کردن فاصله
-    setPrice(null); // پاک کردن قیمت
-    setEditMode(false); // غیرفعال کردن حالت ویرایش
+    setEditMode(true);
+    setOrigin(null);
+    setDestination(null);
+    setDistance(null);
+    setPrice(null);
+    setEditMode(false);
   };
 
-  // دریافت موقعیت مکانی کاربر
   const handleMyLocationClick = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -123,8 +140,7 @@ function App() {
             lng: position.coords.longitude,
           };
           setUserLocation(userCoords);
-          setOrigin(userCoords); // تنظیم مبدا به موقعیت کاربر
-          map.flyTo(userCoords, 16); // پرش به موقعیت کاربر
+          setOrigin(userCoords);
         },
         (error) => {
           alert('دریافت موقعیت مکانی ناموفق بود.');
@@ -134,6 +150,9 @@ function App() {
       alert('مرورگر شما از قابلیت موقعیت‌یابی پشتیبانی نمی‌کند.');
     }
   };
+
+
+
 
   return (
     <div className="map-container">
@@ -181,8 +200,9 @@ function App() {
                 setPrice(dist * pricePerKm);
               },
             }}
+         
           >
-            <Popup closeOnEscapeKey={false} autoClose={false} closeOnClick={false} >
+            <Popup  closeOnEscapeKey={false} autoClose={false} closeOnClick={false} >
               مقصد
             </Popup>
           </Marker>
@@ -190,16 +210,19 @@ function App() {
         <ZoomToLocation position={origin} />
         <ZoomToLocation position={destination} />
         <ZoomToLocation position={userLocation} />
+        {origin && destination && (
+          <RoutingMachine origin={origin} destination={destination} />
+        )}
       </MapContainer>
       <div className="bottom-box">
-     <div>
-     <button className='first-bottoms' onClick={handleOriginClick} disabled={editMode || !!origin}>
-          انتخاب مبدا
-        </button>
-        <button onClick={handleDestinationClick} disabled={editMode || !origin || !!destination}>
-          انتخاب مقصد
-        </button>
-     </div>
+        <div>
+          <button className='first-bottoms' onClick={handleOriginClick} disabled={editMode || !!origin}>
+            انتخاب مبدا
+          </button>
+          <button onClick={handleDestinationClick} disabled={editMode || !origin || !!destination}>
+            انتخاب مقصد
+          </button>
+        </div>
         <button className='my-locations-btn' onClick={handleMyLocationClick} disabled={editMode}>
           موقعیت من
         </button>
@@ -218,7 +241,6 @@ function App() {
             </div>
           </div>
         )}
-      
       </div>
     </div>
   );
